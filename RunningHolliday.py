@@ -2,6 +2,7 @@ from os import supports_effective_ids
 import pygame
 import random
 import sys
+from pygame.locals import *
 
 from pygame import color
 
@@ -91,7 +92,7 @@ class mainClass():
         self.tileHeight = 32
 
         # Player
-        self.playerX = 350
+        self.playerX = 50
         self.playerY = -200
         self.playerWidth = 40
         self.playerHeight = 50
@@ -128,10 +129,10 @@ class mainClass():
             )
 
     def drawMap(self):
-        # true_scroll[0] += (player_rect.x-true_scroll[0]-152)/20
         # Calc scroll player movement
-        self.mapScroll[0] += (self.playerX - self.mapScroll[0]-330)/15
-        self.mapScroll[1] += (self.playerY - self.mapScroll[1]-310)/15
+        # Scrolling ist the Value that the tiles move so the player is standing in the middle of the screen
+        self.mapScroll[0] += (self.playerX - self.mapScroll[0]-330) / 15
+        self.mapScroll[1] += (self.playerY - self.mapScroll[1]-310) / 15
         self.scroll = self.mapScroll.copy()
         self.scroll[0] = int(self.scroll[0])
         self.scroll[1] = int(self.scroll[1])
@@ -177,6 +178,7 @@ class mainClass():
 
     # PLAYER
     def collide(self, newX, newY):
+        # Checking if the player is colliding with the world
         collision = False
         # player rect
         playerRect = pygame.Rect(
@@ -188,8 +190,7 @@ class mainClass():
                 mapBlock = pygame.Rect(x*self.tileHeight,
                                        y*self.tileHeight,
                                        self.tileHeight,
-                                       self.tileHeight
-                                       )
+                                       self.tileHeight)
                 if mapBlock.colliderect(playerRect) and block != "0":
                     collision = True
                 x += 1
@@ -200,6 +201,10 @@ class mainClass():
         if not self.collide(playerX, playerY):
             self.playerX = playerX
             self.playerY = playerY
+
+    def resetPLayer(self):
+        self.playerX = 50
+        self.playerY = -150
 
     def updatePlayer(self):
         # Getting the pressed key
@@ -228,6 +233,8 @@ class mainClass():
             self.jumpvar = 0
             self.velocityDown = 3
             self.jump = False
+        if self.playerY > 900:
+            self.resetPLayer()
 
     def drawPlayer(self):
         screen.blit(
