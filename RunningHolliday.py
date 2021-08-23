@@ -32,7 +32,7 @@ colors = {
 pygame.init()
 screen = pygame.display.set_mode(screenSize)
 clock = pygame.time.Clock()
-pygame.display.set_caption("DinoRun ~Lukas")
+pygame.display.set_caption("RunningHolliday ~Lukas")
 
 # DisplayText
 
@@ -65,21 +65,28 @@ class mainClass():
         self.scroll = [0, 0]
         self.mapScroll = [0, 0]
         self.tiles = {
-            "down": pygame.image.load('Graphics/Tiles/Down.png'),
-            "left": pygame.image.load('Graphics/Tiles/Left.png'),
-            "right": pygame.image.load('Graphics/Tiles/Right.png'),
-            "up": pygame.image.load('Graphics/Tiles/Up.png'),
-            "no": pygame.image.load('Graphics/Tiles/No.png'),
-            "downLeft": pygame.image.load('Graphics/Tiles/downLeft.png'),
-            "downRight": pygame.image.load('Graphics/Tiles/DownRight.png'),
-            "upLeft": pygame.image.load('Graphics/Tiles/UpLeft.png'),
-            "upRight": pygame.image.load('Graphics/Tiles/UpRight.png'),
+            "down": pygame.image.load('Graphics/Tiles/Down.png').convert(),
+            "left": pygame.image.load('Graphics/Tiles/Left.png').convert(),
+            "right": pygame.image.load('Graphics/Tiles/Right.png').convert(),
+            "up": pygame.image.load('Graphics/Tiles/Up.png').convert(),
+            "no": pygame.image.load('Graphics/Tiles/No.png').convert(),
+            "downLeft": pygame.image.load('Graphics/Tiles/downLeft.png').convert(),
+            "downRight": pygame.image.load('Graphics/Tiles/DownRight.png').convert(),
+            "upLeft": pygame.image.load('Graphics/Tiles/UpLeft.png').convert(),
+            "upRight": pygame.image.load('Graphics/Tiles/UpRight.png').convert(),
         }
         # Some layers to create the Background
         self.layers = [
-            [pygame.image.load('Graphics/Background/Layers/1.png'), 0.1],
-            [pygame.image.load('Graphics/Background/Layers/2.png'), 0.2],
-            [pygame.image.load('Graphics/Background/Layers/3.png'), 0.3],
+            [pygame.image.load(
+                'Graphics/Background/Layers/1.png').convert_alpha(), 0.1],
+            [pygame.image.load(
+                'Graphics/Background/Layers/2.png').convert_alpha(), 0.2],
+            [pygame.image.load(
+                'Graphics/Background/Layers/3.png').convert_alpha(), 0.3],
+            [pygame.image.load(
+                'Graphics/Background/Layers/4.png').convert_alpha(), 0.4],
+            [pygame.image.load(
+                'Graphics/Background/Layers/5.png').convert_alpha(), 0.5],
         ]
         self.tileHeight = 32
 
@@ -94,7 +101,8 @@ class mainClass():
         self.velocityDown = 3
         self.jump = False
         # Player Vita
-        self.vita = pygame.image.load('Graphics/Vita/vita_00.png')
+        self.vita = pygame.image.load(
+            'Graphics/Vita/vita_00.png').convert_alpha()
 
     def drawTile(self, tile, x, y):
         # Drawing the Blocks of the map
@@ -129,7 +137,7 @@ class mainClass():
         self.scroll[1] = int(self.scroll[1])
         # Drawing the map
         # This function will take a lot of power
-        # self.drawLayers()
+        self.drawLayers()
 
         y = 0
         for row in self.map:
@@ -199,9 +207,9 @@ class mainClass():
         if pressed[pygame.K_UP] and not self.jump and self.collide(self.playerX, self.playerY + 1):
             self.jump = True
             self.jumpvar = 15
-        if pressed[pygame.K_LEFT]:
+        elif pressed[pygame.K_LEFT]:
             self.movePlayer(self.playerX - self.speed, self.playerY)
-        if pressed[pygame.K_RIGHT]:
+        elif pressed[pygame.K_RIGHT]:
             self.movePlayer(self.playerX + self.speed, self.playerY)
 
         if not self.collide(self.playerX, self.playerY + self.velocityDown) and self.jumpvar == 0:
@@ -233,7 +241,7 @@ class mainClass():
 
 game = mainClass()
 # Game Loop
-while True:
+while (1):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
