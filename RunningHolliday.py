@@ -35,20 +35,23 @@ screen = pygame.display.set_mode(screenSize)
 clock = pygame.time.Clock()
 pygame.display.set_caption("RunningHolliday ~Lukas")
 
-# DisplayText
-
 
 def showtext(text, x, y, fontSize):
+    # Display Text on Screen
     font = pygame.font.Font(None, fontSize)
     text_surface = font.render(text, True, colors["white"])
     text_rect = text_surface.get_rect()
     text_rect.center = (x, y)
     screen.blit(text_surface, text_rect)
 
-# Getting the MAp
+
+def drawOnScreen(picture, x, y):
+    # Draw Images on the screen
+    screen.blit(picture, (x, y))
 
 
 def getGameMap(path):
+    # Building the Map out of the Level.txt file
     f = open(path + '.txt', 'r')
     data = f.read()
     f.close()
@@ -102,8 +105,34 @@ class mainClass():
         self.velocityDown = 3
         self.jump = False
         # Player Vita
-        self.vita = pygame.image.load(
-            'Graphics/Vita/vita_00.png').convert_alpha()
+        self.runAnimation = 0
+        self.idleAnimation = 0
+        # direction = [walkRight, walkLeft, Jump, stand]
+        # TODO mayby add the ability to duck ...
+        self.direction = [0, 0, 0, 1]
+        self.vitaRunRight = [
+            pygame.image.load('Graphics/Vita/vita_05.png').convert_alpha(),
+            pygame.image.load('Graphics/Vita/vita_06.png').convert_alpha(),
+            pygame.image.load('Graphics/Vita/vita_07.png').convert_alpha(),
+            pygame.image.load('Graphics/Vita/vita_08.png').convert_alpha(),
+            pygame.image.load('Graphics/Vita/vita_09.png').convert_alpha(),
+            pygame.image.load('Graphics/Vita/vita_10.png').convert_alpha(),
+        ]
+        self.vitaRunLeft = [
+            pygame.image.load('Graphics/Vita/vita_05left.png').convert_alpha(),
+            pygame.image.load('Graphics/Vita/vita_06left.png').convert_alpha(),
+            pygame.image.load('Graphics/Vita/vita_07left.png').convert_alpha(),
+            pygame.image.load('Graphics/Vita/vita_08left.png').convert_alpha(),
+            pygame.image.load('Graphics/Vita/vita_09left.png').convert_alpha(),
+            pygame.image.load('Graphics/Vita/vita_10left.png').convert_alpha(),
+        ]
+        self.vitaIdle = [
+            pygame.image.load('Graphics/Vita/vita_00.png').convert_alpha(),
+            pygame.image.load('Graphics/Vita/vita_01.png').convert_alpha(),
+            pygame.image.load('Graphics/Vita/vita_02.png').convert_alpha(),
+            pygame.image.load('Graphics/Vita/vita_03.png').convert_alpha(),
+            pygame.image.load('Graphics/Vita/vita_04.png').convert_alpha(),
+        ]
 
     def drawTile(self, tile, x, y):
         # Drawing the Blocks of the map
@@ -120,13 +149,7 @@ class mainClass():
         #  screen.blit(self.layers["3"][0],
         #             (-150 - self.scroll[0] * self.layers["3"][1], 0))
         for layer in self.layers:
-            screen.blit(
-                layer[0],
-                (
-                    -150 - self.scroll[0] * layer[1],
-                    0
-                )
-            )
+            drawOnScreen(layer[0], -150 - self.scroll[0] * layer[1], 0)
 
     def drawMap(self):
         # Calc scroll player movement
@@ -187,10 +210,8 @@ class mainClass():
         for row in self.map:
             x = 0
             for block in row:
-                mapBlock = pygame.Rect(x*self.tileHeight,
-                                       y*self.tileHeight,
-                                       self.tileHeight,
-                                       self.tileHeight)
+                mapBlock = pygame.Rect(
+                    x*self.tileHeight, y*self.tileHeight, self.tileHeight, self.tileHeight)
                 if mapBlock.colliderect(playerRect) and block != "0":
                     collision = True
                 x += 1
@@ -206,15 +227,26 @@ class mainClass():
         self.playerX = 50
         self.playerY = -150
 
+    def setDirection(self, direction):
+        self.direction = direction
+
     def updatePlayer(self):
         # Getting the pressed key
         pressed = pygame.key.get_pressed()
+        self.direction = [0, 0, 0, 1]
+        self.idleAnimation += 1
+        # Set the Variables to initialize a jump
         if pressed[pygame.K_UP] and not self.jump and self.collide(self.playerX, self.playerY + 1):
+            self.direction = [0, 0, 1, 0]
             self.jump = True
             self.jumpvar = 15
+        # Moving the player left
         elif pressed[pygame.K_LEFT]:
+            self.direction = [0, 1, 0, 0]
             self.movePlayer(self.playerX - self.speed, self.playerY)
+        # Moving the player to the right
         elif pressed[pygame.K_RIGHT]:
+            self.direction = [1, 0, 0, 0]
             self.movePlayer(self.playerX + self.speed, self.playerY)
 
         if not self.collide(self.playerX, self.playerY + self.velocityDown) and self.jumpvar == 0:
@@ -233,17 +265,31 @@ class mainClass():
             self.jumpvar = 0
             self.velocityDown = 3
             self.jump = False
+        # Reset the player to the starting point if he has fallen from the map
         if self.playerY > 900:
             self.resetPLayer()
 
-    def drawPlayer(self):
-        screen.blit(
-            self.vita,
-            (
-                self.playerX - self.scroll[0] - 17,
-                self.playerY - self.scroll[1] - 11
-            )
+    def drawPlayer(self, picture):
+        drawOnScreen(
+            picture,
+            self.playerX - self.scroll[0] - 17,
+            self.playerY - self.scroll[1] - 11
         )
+
+    def getPlayerImage(self):
+        # Drawing the player to the screen
+        if self.direction[0]:
+            self.drawPlayer(self.vitaRunRight[self.runAnimation // 5])
+        elif self.direction[1]:
+            self.drawPlayer(self.vitaRunLeft[self.runAnimation // 5])
+        else:
+            self.drawPlayer(self.vitaIdle[self.idleAnimation // 10])
+        if self.idleAnimation > 48:
+            self.idleAnimation = 0
+        if self.runAnimation < 24:
+            self.runAnimation += 1
+        else:
+            self.runAnimation = 0
 
 
 game = mainClass()
@@ -255,6 +301,6 @@ while (1):
     screen.fill(colors["black"])
     game.updatePlayer()
     game.drawMap()
-    game.drawPlayer()
+    game.getPlayerImage()
     pygame.display.flip()
     clock.tick(60)
