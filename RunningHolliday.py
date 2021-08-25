@@ -26,6 +26,7 @@ colors = {
     "white": (255, 255, 255),
     "black": (0, 0, 0),
     "neonGreen": (37, 247, 30),
+    "lightBlue": (0, 255, 255),
 }
 
 
@@ -79,6 +80,18 @@ class mainClass():
             "upLeft": pygame.image.load('Graphics/Tiles/UpLeft.png').convert(),
             "upRight": pygame.image.load('Graphics/Tiles/UpRight.png').convert(),
         }
+        self.flagAnimation = 0
+        self.flagPosition = [2600, 175]
+        self.flag = [
+            pygame.image.load(
+                'Graphics/Objects/Flag/Flag_0.png').convert_alpha(),
+            pygame.image.load(
+                'Graphics/Objects/Flag/Flag_1.png').convert_alpha(),
+            pygame.image.load(
+                'Graphics/Objects/Flag/Flag_2.png').convert_alpha(),
+            pygame.image.load(
+                'Graphics/Objects/Flag/Flag_3.png').convert_alpha(),
+        ]
         # Some layers to create the Background
         self.layers = [
             [pygame.image.load(
@@ -198,8 +211,23 @@ class mainClass():
                     self.drawTile(self.tiles["no"], x, y)
                 x += 1
             y += 1
+        screen.blit(self.flag[0], (self.flagPosition[0] -
+                    self.scroll[0], self.flagPosition[1] - self.scroll[1]))
 
     # PLAYER
+    def checkforwin(self):
+        flagRect = pygame.Rect(
+            self.flagPosition[0],
+            self.flagPosition[1],
+            48,
+            48
+        )
+        playerRect = pygame.Rect(
+            self.playerX, self.playerY, self.playerWidth, self.playerHeight)
+        if playerRect.colliderect(flagRect):
+            self.map = getGameMap("Level2")
+            self.resetPLayer()
+
     def collide(self, newX, newY):
         # Checking if the player is colliding with the world
         collision = False
@@ -268,6 +296,7 @@ class mainClass():
         # Reset the player to the starting point if he has fallen from the map
         if self.playerY > 900:
             self.resetPLayer()
+        self.checkforwin()
 
     def drawPlayer(self, picture):
         drawOnScreen(
@@ -298,7 +327,7 @@ while (1):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
-    screen.fill(colors["black"])
+    screen.fill(colors["lightBlue"])
     game.updatePlayer()
     game.drawMap()
     game.getPlayerImage()
