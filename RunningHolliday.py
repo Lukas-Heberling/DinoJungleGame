@@ -38,6 +38,21 @@ clock = pygame.time.Clock()
 pygame.display.set_caption("RunningHolliday ~Lukas")
 
 
+# Some layers to create the Background
+layers = [
+    [pygame.image.load(
+        'Graphics/Background/Layers/1.png').convert_alpha(), 0.1],
+    [pygame.image.load(
+        'Graphics/Background/Layers/2.png').convert_alpha(), 0.2],
+    [pygame.image.load(
+        'Graphics/Background/Layers/3.png').convert_alpha(), 0.3],
+    [pygame.image.load(
+        'Graphics/Background/Layers/4.png').convert_alpha(), 0.4],
+    [pygame.image.load(
+        'Graphics/Background/Layers/5.png').convert_alpha(), 0.5],
+]
+
+
 def showtext(text, x, y, fontSize):
     # Display Text on Screen
     font = pygame.font.Font(None, fontSize)
@@ -65,7 +80,9 @@ def getGameMap(path):
 
 
 def menu():
+    layerX = 0
     while (1):
+        layerX -= 1
         clicked = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -83,10 +100,12 @@ def menu():
         else:
             buttonColor = colors["darkGrey"]
         if clicked and buttonSelected:
-            break
+            gameLoop()
         screen.fill(colors["black"])
+        for layer in layers:
+            drawOnScreen(layer[0], layerX * layer[1], 0)
         pygame.draw.rect(screen, buttonColor, (300, 320, 100, 60))
-        showtext("Running Holliday Menu:", 350, 50, 80)
+        showtext("Running Holliday", 350, 50, 80)
         showtext("Play", 350, 350, 50)
         showtext("created by ~Lukas Heberling", 150, 680, 30)
         pygame.display.update()
@@ -120,19 +139,6 @@ class mainClass():
                 'Graphics/Objects/Flag/Flag_2.png').convert_alpha(),
             pygame.image.load(
                 'Graphics/Objects/Flag/Flag_3.png').convert_alpha(),
-        ]
-        # Some layers to create the Background
-        self.layers = [
-            [pygame.image.load(
-                'Graphics/Background/Layers/1.png').convert_alpha(), 0.1],
-            [pygame.image.load(
-                'Graphics/Background/Layers/2.png').convert_alpha(), 0.2],
-            [pygame.image.load(
-                'Graphics/Background/Layers/3.png').convert_alpha(), 0.3],
-            [pygame.image.load(
-                'Graphics/Background/Layers/4.png').convert_alpha(), 0.4],
-            [pygame.image.load(
-                'Graphics/Background/Layers/5.png').convert_alpha(), 0.5],
         ]
         self.tileHeight = 32
 
@@ -183,7 +189,7 @@ class mainClass():
 
     def drawLayers(self):
         # Drawing the layers of the Background
-        for layer in self.layers:
+        for layer in layers:
             drawOnScreen(layer[0], -150 - self.scroll[0] * layer[1], 0)
 
     def drawMap(self):
@@ -289,6 +295,8 @@ class mainClass():
         self.direction = [0, 0, 0, 1]
         self.idleAnimation += 1
         # Set the Variables to initialize a jump
+        if pressed[pygame.K_ESCAPE]:
+            menu()
         if pressed[pygame.K_UP] and not self.jump and self.collide(self.playerX, self.playerY + 1):
             self.direction = [0, 0, 1, 0]
             self.jump = True
@@ -348,14 +356,19 @@ class mainClass():
 
 game = mainClass()
 # Game Loop
+
+
+def gameLoop():
+    while (1):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+        screen.fill(colors["lightBlue"])
+        game.updatePlayer()
+        game.drawMap()
+        game.getPlayerImage()
+        pygame.display.flip()
+        clock.tick(60)
+
+
 menu()
-while (1):
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            sys.exit()
-    screen.fill(colors["lightBlue"])
-    game.updatePlayer()
-    game.drawMap()
-    game.getPlayerImage()
-    pygame.display.flip()
-    clock.tick(60)
