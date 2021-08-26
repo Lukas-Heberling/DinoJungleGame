@@ -27,6 +27,7 @@ colors = {
     "black": (0, 0, 0),
     "neonGreen": (37, 247, 30),
     "lightBlue": (0, 255, 255),
+    "green": (0, 255, 0),
 }
 
 
@@ -61,6 +62,34 @@ def getGameMap(path):
     for row in data:
         game_map.append(list(row))
     return game_map
+
+
+def menu():
+    while (1):
+        clicked = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                clicked = True
+        mousePos = pygame.mouse.get_pos()
+        mouseRect = pygame.Rect(mousePos[0], mousePos[1], 20, 20)
+        buttonRect = pygame.Rect(300, 320, 100, 50)
+        buttonSelected = False
+        if mouseRect.colliderect(buttonRect):
+            buttonSelected = True
+        if buttonSelected:
+            buttonColor = colors["lightBlue"]
+        else:
+            buttonColor = colors["darkGrey"]
+        if clicked and buttonSelected:
+            break
+        screen.fill(colors["black"])
+        pygame.draw.rect(screen, buttonColor, (300, 320, 100, 60))
+        showtext("Running Holliday Menu:", 350, 50, 80)
+        showtext("Play", 350, 350, 50)
+        showtext("created by ~Lukas Heberling", 150, 680, 30)
+        pygame.display.update()
 
 
 class mainClass():
@@ -149,18 +178,11 @@ class mainClass():
 
     def drawTile(self, tile, x, y):
         # Drawing the Blocks of the map
-        screen.blit(
-            tile,
-            (
-                x * self.tileHeight - self.scroll[0],
-                y * self.tileHeight - self.scroll[1]
-            )
-        )
+        drawOnScreen(tile, x * self.tileHeight -
+                     self.scroll[0], y * self.tileHeight - self.scroll[1])
 
     def drawLayers(self):
         # Drawing the layers of the Background
-        #  screen.blit(self.layers["3"][0],
-        #             (-150 - self.scroll[0] * self.layers["3"][1], 0))
         for layer in self.layers:
             drawOnScreen(layer[0], -150 - self.scroll[0] * layer[1], 0)
 
@@ -211,8 +233,11 @@ class mainClass():
                     self.drawTile(self.tiles["no"], x, y)
                 x += 1
             y += 1
-        screen.blit(self.flag[0], (self.flagPosition[0] -
-                    self.scroll[0], self.flagPosition[1] - self.scroll[1]))
+        drawOnScreen(
+            self.flag[0],
+            self.flagPosition[0] - self.scroll[0],
+            self.flagPosition[1] - self.scroll[1]
+        )
 
     # PLAYER
     def checkforwin(self):
@@ -323,6 +348,7 @@ class mainClass():
 
 game = mainClass()
 # Game Loop
+menu()
 while (1):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
