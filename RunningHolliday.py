@@ -89,6 +89,8 @@ vitaIdle = [
     pygame.image.load("Graphics/Vita/vita_04.png").convert_alpha(),
 ]
 
+heartImage = pygame.image.load("Graphics/heart.png").convert_alpha()
+
 
 def showtext(text, x, y, fontSize):
     # Display Text on Screen
@@ -133,7 +135,7 @@ def menu():
         if mouseRect.colliderect(buttonRect):
             buttonSelected = True
         if buttonSelected:
-            buttonColor = colors["black"]
+            buttonColor = colors["lightBlue"]
         else:
             buttonColor = colors["darkGrey"]
         if clicked and buttonSelected:
@@ -150,8 +152,10 @@ def menu():
 
 class mainClass:
     def __init__(self):
+        # LEVEL
+        self.level = 1
         # MAP
-        self.map = getGameMap("Level1")
+        self.map = getGameMap("Level" + str(self.level))
         self.scroll = [0, 0]
         self.mapScroll = [0, 0]
         self.flagAnimation = 0
@@ -164,6 +168,8 @@ class mainClass:
         self.playerWidth = 40
         self.playerHeight = 50
         self.speed = 5
+        self.lives = 3
+        self.score = 0
         # Player jump
         self.jumpvar = 0
         self.velocityDown = 3
@@ -187,6 +193,12 @@ class mainClass:
         # Drawing the layers of the Background
         for layer in layers:
             drawOnScreen(layer[0], -150 - self.scroll[0] * layer[1], 0)
+
+    def drawInterface(self):
+        showtext("Score: " + str(self.score), 600, 30, 50)
+        showtext("Level: " + str(self.level), 350, 30, 40)
+        for live in range(self.lives):
+            screen.blit(heartImage, ((live * 50), 0))
 
     def drawMap(self):
         # Calc scroll player movement
@@ -248,7 +260,9 @@ class mainClass:
             self.playerX, self.playerY, self.playerWidth, self.playerHeight
         )
         if playerRect.colliderect(flagRect):
-            self.map = getGameMap("Level2")
+            self.level += 1
+            self.score += 100
+            self.map = getGameMap("Level" + str(self.level))
             self.resetPLayer()
 
     def collide(self, newX, newY):
@@ -288,6 +302,9 @@ class mainClass:
         self.idleAnimation += 1
         # Set the Variables to initialize a jump
         if pressed[pygame.K_ESCAPE]:
+            self.level = 1
+            self.resetPLayer()
+            self.map = getGameMap("Level" + str(self.level))
             menu()
         if (
             pressed[pygame.K_UP]
@@ -367,6 +384,7 @@ def gameLoop():
         game.updatePlayer()
         game.drawMap()
         game.getPlayerImage()
+        game.drawInterface()
         pygame.display.flip()
         clock.tick(60)
 
