@@ -260,6 +260,8 @@ class mainClass:
             self.playerX, self.playerY, self.playerWidth, self.playerHeight
         )
         if playerRect.colliderect(flagRect):
+            if self.lives < 5:
+                self.lives += 1
             self.level += 1
             self.score += 100
             self.map = getGameMap("Level" + str(self.level))
@@ -298,6 +300,13 @@ class mainClass:
     def updatePlayer(self):
         # Getting the pressed key
         pressed = pygame.key.get_pressed()
+        if self.lives < 1:
+            self.level = 1
+            self.resetPLayer()
+            self.map = getGameMap("Level" + str(self.level))
+            self.lives = 3
+            menu()
+        # If nothing is pressed set the players direction to idle
         self.direction = [0, 0, 0, 1]
         self.idleAnimation += 1
         # Set the Variables to initialize a jump
@@ -305,6 +314,7 @@ class mainClass:
             self.level = 1
             self.resetPLayer()
             self.map = getGameMap("Level" + str(self.level))
+            self.lives = 3
             menu()
         if (
             pressed[pygame.K_UP]
@@ -346,6 +356,7 @@ class mainClass:
             self.jump = False
         # Reset the player to the starting point if he has fallen from the map
         if self.playerY > 900:
+            self.lives -= 1
             self.resetPLayer()
         self.checkforwin()
 
