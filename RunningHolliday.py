@@ -227,24 +227,24 @@ class mainClass:
                             self.tileHeight,
                         ),
                     )
-                if block == "1":
-                    self.drawTile(tiles["up"], x, y)
-                if block == "2":
-                    self.drawTile(tiles["down"], x, y)
-                if block == "3":
-                    self.drawTile(tiles["left"], x, y)
-                if block == "4":
-                    self.drawTile(tiles["right"], x, y)
-                if block == "5":
-                    self.drawTile(tiles["upLeft"], x, y)
-                if block == "6":
-                    self.drawTile(tiles["upRight"], x, y)
-                if block == "7":
-                    self.drawTile(tiles["downLeft"], x, y)
-                if block == "8":
-                    self.drawTile(tiles["downRight"], x, y)
-                if block == "9":
-                    self.drawTile(tiles["no"], x, y)
+                    if block == "1":
+                        self.drawTile(tiles["up"], x, y)
+                    if block == "2":
+                        self.drawTile(tiles["down"], x, y)
+                    if block == "3":
+                        self.drawTile(tiles["left"], x, y)
+                    if block == "4":
+                        self.drawTile(tiles["right"], x, y)
+                    if block == "5":
+                        self.drawTile(tiles["upLeft"], x, y)
+                    if block == "6":
+                        self.drawTile(tiles["upRight"], x, y)
+                    if block == "7":
+                        self.drawTile(tiles["downLeft"], x, y)
+                    if block == "8":
+                        self.drawTile(tiles["downRight"], x, y)
+                    if block == "9":
+                        self.drawTile(tiles["no"], x, y)
                 x += 1
             y += 1
         drawOnScreen(
@@ -276,14 +276,15 @@ class mainClass:
         for row in self.map:
             x = 0
             for block in row:
-                mapBlock = pygame.Rect(
-                    x * self.tileHeight,
-                    y * self.tileHeight,
-                    self.tileHeight,
-                    self.tileHeight,
-                )
-                if mapBlock.colliderect(playerRect) and block != "0":
-                    collision = True
+                if block != "0":
+                    mapBlock = pygame.Rect(
+                        x * self.tileHeight,
+                        y * self.tileHeight,
+                        self.tileHeight,
+                        self.tileHeight,
+                    )
+                    if mapBlock.colliderect(playerRect):
+                        collision = True
                 x += 1
             y += 1
         return collision
@@ -297,25 +298,36 @@ class mainClass:
         self.playerX = 50
         self.playerY = -150
 
-    def updatePlayer(self):
-        # Getting the pressed key
-        pressed = pygame.key.get_pressed()
+    def checkForDeath(self):
         if self.lives < 1:
             self.level = 1
             self.resetPLayer()
             self.map = getGameMap("Level" + str(self.level))
             self.lives = 3
             menu()
+
+    def escape(self):
+        self.level = 1
+        self.resetPLayer()
+        self.map = getGameMap("Level" + str(self.level))
+        self.lives = 3
+        self.score = 0
+        menu()
+
+    def updatePlayer(self):
+        # Checking if the player is dead
+        self.checkForDeath()
+        # Checking if the player has won
+        self.checkforwin()
         # If nothing is pressed set the players direction to idle
         self.direction = [0, 0, 0, 1]
         self.idleAnimation += 1
-        # Set the Variables to initialize a jump
+        # Getting the pressed key
+        pressed = pygame.key.get_pressed()
+        # Escape the game
         if pressed[pygame.K_ESCAPE]:
-            self.level = 1
-            self.resetPLayer()
-            self.map = getGameMap("Level" + str(self.level))
-            self.lives = 3
-            menu()
+            self.escape()
+        # Set the Variables to initialize a jump
         if (
             pressed[pygame.K_UP]
             and not self.jump
@@ -332,7 +344,7 @@ class mainClass:
         elif pressed[pygame.K_RIGHT]:
             self.direction = [1, 0, 0, 0]
             self.movePlayer(self.playerX + self.speed, self.playerY)
-
+        # Gravity
         if (
             not self.collide(self.playerX, self.playerY + self.velocityDown)
             and self.jumpvar == 0
@@ -341,6 +353,8 @@ class mainClass:
             self.velocityDown += 0.5
         elif self.jumpvar == 0:
             self.velocityDown -= 1
+
+        # Jumping
         if self.jump and self.jumpvar > 0:
             if not self.collide(
                 self.playerX, self.playerY - (self.jumpvar ** 2) * 0.17
@@ -350,15 +364,17 @@ class mainClass:
                 self.jumpvar = 0
                 self.jump = False
             self.jumpvar -= 1
+
+        # Touching the ground
         if self.collide(self.playerX, self.playerY + 1):
             self.jumpvar = 0
             self.velocityDown = 3
             self.jump = False
+
         # Reset the player to the starting point if he has fallen from the map
         if self.playerY > 900:
             self.lives -= 1
             self.resetPLayer()
-        self.checkforwin()
 
     def drawPlayer(self, picture):
         drawOnScreen(
