@@ -3,6 +3,8 @@ import pygame
 import random
 import sys
 from pygame.locals import *
+from EntityClass import entityClass
+from GameHelper import *
 
 from pygame import color
 
@@ -92,20 +94,6 @@ vitaIdle = [
 heartImage = pygame.image.load("Graphics/heart.png").convert_alpha()
 
 
-def showtext(text, x, y, fontSize):
-    # Display Text on Screen
-    font = pygame.font.Font(None, fontSize)
-    text_surface = font.render(text, True, colors["white"])
-    text_rect = text_surface.get_rect()
-    text_rect.center = (x, y)
-    screen.blit(text_surface, text_rect)
-
-
-def drawOnScreen(picture, x, y):
-    # Draw Images on the screen
-    screen.blit(picture, (x, y))
-
-
 def getGameMap(path):
     # Building the Map out of the Level.txt file
     f = open(path + ".txt", "r")
@@ -142,11 +130,11 @@ def menu():
             gameLoop()
         screen.fill(colors["black"])
         for layer in layers:
-            drawOnScreen(layer[0], layerX * layer[1], 0)
+            drawOnScreen(screen, layer[0], layerX * layer[1], 0)
         pygame.draw.rect(screen, buttonColor, (300, 320, 100, 60))
-        showtext("Running Holliday", 350, 50, 80)
-        showtext("Play", 350, 350, 50)
-        showtext("created by ~Lukas Heberling", 150, 680, 30)
+        showtext(screen, "Running Holliday", 350, 50, 80)
+        showtext(screen, "Play", 350, 350, 50)
+        showtext(screen, "created by ~Lukas Heberling", 150, 680, 30)
         pygame.display.update()
 
 
@@ -163,27 +151,15 @@ class mainClass:
         self.tileHeight = 32
 
         # Player
-        self.playerX = 50
-        self.playerY = -200
-        self.playerWidth = 40
-        self.playerHeight = 50
-        self.speed = 5
-        self.lives = 3
-        self.score = 0
-        # Player jump
-        self.jumpvar = 0
-        self.velocityDown = 3
-        self.jump = False
+        self.player = entityClass(50, -150, 40, 50, 5, 3, 3, [0, 0, 0, 1])
         # Player Vita
         self.runAnimation = 0
         self.idleAnimation = 0
-        # direction = [walkRight, walkLeft, Jump, stand]
-        # TODO mayby add the ability to duck ...
-        self.direction = [0, 0, 0, 1]
 
     def drawTile(self, tile, x, y):
         # Drawing the Blocks of the map
         drawOnScreen(
+            screen,
             tile,
             x * self.tileHeight - self.scroll[0],
             y * self.tileHeight - self.scroll[1],
@@ -192,19 +168,19 @@ class mainClass:
     def drawLayers(self):
         # Drawing the layers of the Background
         for layer in layers:
-            drawOnScreen(layer[0], -150 - self.scroll[0] * layer[1], 0)
+            drawOnScreen(screen, layer[0], -150 - self.scroll[0] * layer[1], 0)
 
     def drawInterface(self):
-        showtext("Score: " + str(self.score), 600, 30, 50)
-        showtext("Level: " + str(self.level), 350, 30, 40)
-        for live in range(self.lives):
+        showtext(screen, "Score: " + str(self.player.score), 600, 30, 50)
+        showtext(screen, "Level: " + str(self.level), 350, 30, 40)
+        for live in range(self.player.lives):
             screen.blit(heartImage, ((live * 50), 0))
 
     def drawMap(self):
         # Calc scroll player movement
         # Scrolling ist the Value that the tiles move so the player is standing in the middle of the screen
-        self.mapScroll[0] += (self.playerX - self.mapScroll[0] - 330) / 20
-        self.mapScroll[1] += (self.playerY - self.mapScroll[1] - 310) / 20
+        self.mapScroll[0] += (self.player.x - self.mapScroll[0] - 330) / 20
+        self.mapScroll[1] += (self.player.y - self.mapScroll[1] - 310) / 20
         self.scroll = self.mapScroll.copy()
         self.scroll[0] = int(self.scroll[0])
         self.scroll[1] = int(self.scroll[1])
@@ -248,6 +224,7 @@ class mainClass:
                 x += 1
             y += 1
         drawOnScreen(
+            screen,
             flag[0],
             self.flagPosition[0] - self.scroll[0],
             self.flagPosition[1] - self.scroll[1],
@@ -256,22 +233,20 @@ class mainClass:
     # PLAYER
     def checkforwin(self):
         flagRect = pygame.Rect(self.flagPosition[0], self.flagPosition[1], 48, 48)
-        playerRect = pygame.Rect(
-            self.playerX, self.playerY, self.playerWidth, self.playerHeight
-        )
+        playerRect = self.player.getRect({})
         if playerRect.colliderect(flagRect):
-            if self.lives < 5:
-                self.lives += 1
+            if self.player.lives < 5:
+                self.player.lives += 1
             self.level += 1
-            self.score += 100
+            self.player.score += 100
             self.map = getGameMap("Level" + str(self.level))
-            self.resetPLayer()
+            self.player.reset("player", {})
 
     def collide(self, newX, newY):
         # Checking if the player is colliding with the world
         collision = False
         # player rect
-        playerRect = pygame.Rect(newX, newY, self.playerWidth, self.playerHeight)
+        playerRect = self.player.getRect({"x": newX, "y": newY})
         y = 0
         for row in self.map:
             x = 0
@@ -291,27 +266,25 @@ class mainClass:
 
     def movePlayer(self, playerX, playerY):
         if not self.collide(playerX, playerY):
-            self.playerX = playerX
-            self.playerY = playerY
-
-    def resetPLayer(self):
-        self.playerX = 50
-        self.playerY = -150
+            self.player.move(playerX, playerY)
 
     def checkForDeath(self):
-        if self.lives < 1:
+        if self.player.lives < 1:
             self.level = 1
-            self.resetPLayer()
+            self.player.reset("player", {})
             self.map = getGameMap("Level" + str(self.level))
-            self.lives = 3
+            self.player.lives = 3
+            self.scroll = [0, 0]
             menu()
 
     def escape(self):
         self.level = 1
-        self.resetPLayer()
+        self.scroll = [0, 0]
+        self.mapScroll = [0, 0]
+        self.player.reset("player", {})
         self.map = getGameMap("Level" + str(self.level))
-        self.lives = 3
-        self.score = 0
+        self.player.lives = 3
+        self.player.score = 0
         menu()
 
     def updatePlayer(self):
@@ -320,7 +293,7 @@ class mainClass:
         # Checking if the player has won
         self.checkforwin()
         # If nothing is pressed set the players direction to idle
-        self.direction = [0, 0, 0, 1]
+        self.player.direction = [0, 0, 0, 1]
         self.idleAnimation += 1
         # Getting the pressed key
         pressed = pygame.key.get_pressed()
@@ -330,64 +303,65 @@ class mainClass:
         # Set the Variables to initialize a jump
         if (
             pressed[pygame.K_UP]
-            and not self.jump
-            and self.collide(self.playerX, self.playerY + 1)
+            and not self.player.jump
+            and self.collide(self.player.x, self.player.y + 1)
         ):
-            self.direction = [0, 0, 1, 0]
-            self.jump = True
-            self.jumpvar = 15
+            self.player.direction = [0, 0, 1, 0]
+            self.player.jump = True
+            self.player.jumpvar = 15
         # Moving the player left
         elif pressed[pygame.K_LEFT]:
-            self.direction = [0, 1, 0, 0]
-            self.movePlayer(self.playerX - self.speed, self.playerY)
+            self.player.direction = [0, 1, 0, 0]
+            self.movePlayer(self.player.x - self.player.speed, self.player.y)
         # Moving the player to the right
         elif pressed[pygame.K_RIGHT]:
-            self.direction = [1, 0, 0, 0]
-            self.movePlayer(self.playerX + self.speed, self.playerY)
+            self.player.direction = [1, 0, 0, 0]
+            self.movePlayer(self.player.x + self.player.speed, self.player.y)
         # Gravity
         if (
-            not self.collide(self.playerX, self.playerY + self.velocityDown)
-            and self.jumpvar == 0
+            not self.collide(self.player.x, self.player.y + self.player.velocityDown)
+            and self.player.jumpvar == 0
         ):
-            self.playerY += self.velocityDown
-            self.velocityDown += 0.5
-        elif self.jumpvar == 0:
-            self.velocityDown -= 1
+            self.player.y += self.player.velocityDown
+            self.player.velocityDown += 0.5
+        elif self.player.jumpvar == 0:
+            self.player.velocityDown -= 1
 
         # Jumping
-        if self.jump and self.jumpvar > 0:
+        if self.player.jump and self.player.jumpvar > 0:
             if not self.collide(
-                self.playerX, self.playerY - (self.jumpvar ** 2) * 0.17
+                self.player.x, self.player.y - (self.player.jumpvar ** 2) * 0.17
             ):
-                self.playerY -= (self.jumpvar ** 2) * 0.12
+                self.player.y -= (self.player.jumpvar ** 2) * 0.12
             else:
-                self.jumpvar = 0
-                self.jump = False
-            self.jumpvar -= 1
+                self.player.jumpvar = 0
+                self.player.jump = False
+            self.player.jumpvar -= 1
 
         # Touching the ground
-        if self.collide(self.playerX, self.playerY + 1):
-            self.jumpvar = 0
-            self.velocityDown = 3
-            self.jump = False
+        if self.collide(self.player.x, self.player.y + 1):
+            self.player.jumpvar = 0
+            self.player.velocityDown = 3
+            self.player.jump = False
 
         # Reset the player to the starting point if he has fallen from the map
-        if self.playerY > 900:
-            self.lives -= 1
-            self.resetPLayer()
+        if self.player.y > 900:
+            self.player.lives -= 1
+            self.player.reset("player", {})
 
     def drawPlayer(self, picture):
         drawOnScreen(
+            screen,
             picture,
-            self.playerX - self.scroll[0] - 17,
-            self.playerY - self.scroll[1] - 11,
+            self.player.x - self.scroll[0] - 17,
+            self.player.y - self.scroll[1] - 11,
         )
 
     def getPlayerImage(self):
         # Drawing the player to the screen
-        if self.direction[0]:
+        if self.player.direction[0]:
             self.drawPlayer(vitaRunRight[self.runAnimation // 5])
-        elif self.direction[1]:
+        elif self.player.direction[1]:
             self.drawPlayer(vitaRunLeft[self.runAnimation // 5])
         else:
             self.drawPlayer(vitaIdle[self.idleAnimation // 10])
