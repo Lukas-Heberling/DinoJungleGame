@@ -1,6 +1,5 @@
 import pygame
 
-
 class entityClass:
     def __init__(self, x, y, width, height, speed, lives, velocityDown, direction):
         # Position

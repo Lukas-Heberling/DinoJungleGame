@@ -41,6 +41,7 @@ pygame.display.set_caption("RunningHolliday ~Lukas")
 
 
 # Some layers to create the Background
+# [LayerPicture, multiplier how fast the background moves]
 layers = [
     [pygame.image.load("Graphics/Background/Layers/1.png").convert_alpha(), 0.1],
     [pygame.image.load("Graphics/Background/Layers/2.png").convert_alpha(), 0.2],
@@ -168,7 +169,13 @@ class mainClass:
     def drawLayers(self):
         # Drawing the layers of the Background
         for layer in layers:
-            drawOnScreen(screen, layer[0], -150 - self.scroll[0] * layer[1], 0)
+            layerXValue = -150 - self.scroll[0] * layer[1]
+            layerPositions = [layerXValue]
+            # Length image = 1400
+            if (1400 + layerXValue) < 700:
+                layerPositions.append(layerXValue + 1400)
+            for layerPosition in layerPositions:
+                drawOnScreen(screen, layer[0], layerPosition, 0)
 
     def drawInterface(self):
         showtext(screen, "Score: " + str(self.player.score), 600, 30, 50)
