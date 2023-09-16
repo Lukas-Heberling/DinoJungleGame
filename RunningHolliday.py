@@ -40,6 +40,10 @@ clock = pygame.time.Clock()
 pygame.display.set_caption("RunningHolliday ~Lukas")
 
 
+gameIcon = pygame.image.load("Graphics/Vita/vita_00.png")
+pygame.display.set_icon(gameIcon)
+
+
 # Some layers to create the Background
 # [LayerPicture, multiplier how fast the background moves]
 layers = [
@@ -138,6 +142,45 @@ def menu():
         showtext(screen, "created by ~Lukas Heberling", 150, 680, 30)
         pygame.display.update()
 
+def gameOverScreen(score, level):
+    while 1:
+        clicked = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                clicked = True
+        mousePos = pygame.mouse.get_pos()
+        mouseRect = pygame.Rect(mousePos[0], mousePos[1], 20, 20)
+        menuButton = pygame.Rect(50, 520, 200, 60)
+        tryAgainButton = pygame.Rect(450, 520, 200, 60)
+        tryAgainButtonSelected = False
+        menuButtonSelected = False
+        if mouseRect.colliderect(tryAgainButton):
+            tryAgainButtonSelected = True
+        elif mouseRect.colliderect(menuButton):
+            menuButtonSelected = True
+        if tryAgainButtonSelected:
+            tryAgainButtonColor = colors["lightBlue"]
+        else:
+            tryAgainButtonColor = colors["darkGrey"]
+        if menuButtonSelected:
+            menuButtonColor = colors["lightBlue"]
+        else:
+            menuButtonColor = colors["darkGrey"]
+        if tryAgainButtonSelected and clicked:
+            gameLoop()
+        if menuButtonSelected and clicked:
+            menu()
+        screen.fill(colors["black"])
+        pygame.draw.rect(screen, tryAgainButtonColor, (450, 520, 200, 60))
+        pygame.draw.rect(screen, menuButtonColor, (50, 520, 200, 60))
+        showtext(screen, "Game Over", 350, 50, 80)
+        showtext(screen, "Score: " + str(score), 350, 200, 50)
+        showtext(screen, "Level: " + str(level), 350, 400, 50)
+        showtext(screen, "Try Again", 550, 550, 50)
+        showtext(screen, "Menu", 150, 550, 50)
+        pygame.display.update()
 
 class mainClass:
     def __init__(self):
@@ -277,12 +320,15 @@ class mainClass:
 
     def checkForDeath(self):
         if self.player.lives < 1:
+            level = self.level
+            score = self.player.score
             self.level = 1
+            self.player.score = 0
             self.player.reset("player", {})
             self.map = getGameMap("Level" + str(self.level))
             self.player.lives = 3
             self.scroll = [0, 0]
-            menu()
+            gameOverScreen(score, level)
 
     def escape(self):
         self.level = 1
