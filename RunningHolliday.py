@@ -59,7 +59,7 @@ tiles = {
     "right": pygame.image.load("Graphics/Tiles/Right.png").convert(),
     "up": pygame.image.load("Graphics/Tiles/Up.png").convert(),
     "no": pygame.image.load("Graphics/Tiles/No.png").convert(),
-    "downLeft": pygame.image.load("Graphics/Tiles/downLeft.png").convert(),
+    "downLeft": pygame.image.load("Graphics/Tiles/DownLeft.png").convert(),
     "downRight": pygame.image.load("Graphics/Tiles/DownRight.png").convert(),
     "upLeft": pygame.image.load("Graphics/Tiles/UpLeft.png").convert(),
     "upRight": pygame.image.load("Graphics/Tiles/UpRight.png").convert(),
