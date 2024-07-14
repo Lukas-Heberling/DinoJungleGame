@@ -35,8 +35,6 @@ Check out our sleek game menu:
 
 # 🌟 The Game Itself
 
-Get ready for an exciting adventure:
-
 ![Game](images/Game.png)
 
 Enjoy 🦕🌿
